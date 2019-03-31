@@ -127,7 +127,10 @@ class sud_graph {
 	int get_graph_size( );
 	
 	/* Prints graph */
-	void print_graph( ); 
+	void print_graph( );
+
+	/* Prints graph in graphviz format in a given file */
+	int print_graph_graphviz( string filename );
 	
 	/* Empty constructor */
 	sud_graph() {}
@@ -218,14 +221,38 @@ void sud_graph::print_graph( )
 		}
 	}
 }
+
+int sud_graph::print_graph_graphviz( string filename )
+{
+	FILE *fp = fopen(filename.c_str(),"w");
+	if( !fp ){
+		return -1;
+	}
+	fprintf(fp,"digraph{\n");
+	vertex ret;
+	auto size =  list.size();
+	for( int i=0; i< size; i++ ){
+		auto it = list[i].cbegin();
+		auto end = list[i].cend();
+		fprintf(fp,"%d [ label = %s ]\n",i,list[i].get_name().c_str());
+		for( ; it != end; it++ ){
+			//cout<<i<<" --"<<it->second<<"--> "<<it->first<<"\n";
+			if( it->first > i )
+				fprintf(fp,"%d->%d [ label = %d,dir=none ]\n",i,it->first,it->second);
+		}
+	}
+	fprintf(fp,"}\n");
+	fclose(fp);
+	return 1;
+}
 	
 
-#define SIZE 5
+#define SIZE 6
 
 int main()
 {
 	vector< vector<int> > matrix( SIZE,vector<int>(SIZE) );
-	int a[][SIZE]={ {1,5,0,0,2},{0,1,6,4,7},{0,0,1,8,3},{0,0,0,1,0},{0,0,0,0,1}};
+	int a[][SIZE]={ {1,5,0,0,2,0},{0,1,6,4,7,3},{0,0,1,8,3,1},{0,0,0,1,0,2},{0,0,0,0,1,0},{0,0,0,0,0,1}};
 	for( int i=0; i<SIZE; i++ ){
 		for( int j=0; j<SIZE; j++ ){
 			matrix[i][j] = a[i][j];
@@ -234,6 +261,8 @@ int main()
 	
 	sud_graph graph( matrix, SIZE );
 	graph.print_graph();
+	graph.print_graph_graphviz( "trial.dot" );
+	system("dot -Tsvg -O trial.dot");
 	
 }
 						
