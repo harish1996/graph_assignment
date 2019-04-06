@@ -3,142 +3,6 @@
 
 using namespace std;
 
-class vertex {
- private:
-	/* edge weight and index of the destination vertex */
-	typedef pair<int, int> edge;
-	
-	/* Name of the vertex (Optional). Doesn't serve any purpose */
-	string name;
-
-	/* adjacency list of edges */
-	unordered_map<int, int> adjacency;
-
-	static int unnamed_instances;
-	
- public:
-	/* Constructor for vector with names */
-	vertex( string s) : name(s) {}
-
-	/* Constructor for vertices without names */
-	vertex();
-
-	/* Get the name of the vertex */
-	string get_name();
-
-	/* Get edge count from the vertex */
-	int get_edge_count();
-
-	/* Get the nth edge from the vertex */
-	edge get_edge( int n );
-
-	/* Add new edge from the vertex */
-	int add_edge( int n, int weight );
-
-	/* Add new edge from the vertex */
-	int add_edge( pair<int,int>& x );
-
-	/* Returns constant iterator to the start of the vertex set */
-	unordered_map<int,int>::const_iterator cbegin();
-
-	/* Returns constant iterator to the end of the vertex set */
-	unordered_map<int,int>::const_iterator cend();
-};
-
-int vertex::unnamed_instances = 0;
-
-vertex::vertex()
-{
-	name = "unnamed_"+ to_string(vertex::unnamed_instances);
-	vertex::unnamed_instances++;
-}
-
-string vertex::get_name()
-{
-	return name;
-}
-
-int vertex::get_edge_count()
-{
-	return adjacency.size();	
-}
-
-pair<int,int> vertex::get_edge( int n )
-{
-	unordered_map<int,int>::iterator res = adjacency.find(n);
-	pair<int,int> ret(-1,-1);
-	if( res != adjacency.end() ){
-		ret.first = res->first;
-		ret.second = res->second;
-	}
-	return ret;
-}
-
-int vertex::add_edge( int n, int weight )
-{
-	auto ret = adjacency.insert( (pair<int,int>) make_pair(n,weight) );
-	if( ret.second )
-		return get_edge_count();
-	else
-		return -1;
-}
-
-int vertex::add_edge( pair<int,int>& x )
-{
-	auto ret = adjacency.insert( x );
-	if( ret.second )
-		return get_edge_count();
-	else
-		return -1;
-}
-
-unordered_map<int,int>::const_iterator vertex::cbegin()
-{
-	return adjacency.cbegin();
-}
-
-unordered_map<int,int>::const_iterator vertex::cend()
-{
-	return adjacency.cend();
-}
-
-
-class sud_graph {
-	/* Adjacency list */
-	vector<vertex> list;
-
- public:
-	/* Add new named vertex */
-	int add_vertex( string name );
-	
-	/* Add new unnamed vertex */
-	int add_vertex( );
-
-	/* Add n new unnamed vertices */
-	int add_vertex( int n );
-	
-	/* Add edge */
-	void add_edge( int from, int to, int weight );
-
-	/* Get nth vertex in the graph */
-	vertex get_vertex( int n );
-
-	/* Gets Graph size ( Number of vertices ) */
-	int get_graph_size( );
-	
-	/* Prints graph */
-	void print_graph( );
-
-	/* Prints graph in graphviz format in a given file */
-	int print_graph_graphviz( string filename );
-	
-	/* Empty constructor */
-	sud_graph() {}
-
-	/* Initializing graph using adjacency matrix representation */
-	sud_graph( vector<vector<int>> adjacency_matrix, int size );
-};
-
 int sud_graph::add_vertex( string name )
 {
 	vertex temp(name);
@@ -221,6 +85,30 @@ void sud_graph::print_graph( )
 		}
 	}
 }
+/**
+ * @func check_edge 
+ * @brief Checks whether there is an edge between from and to and returns
+ *        the weight of the edge if it exists
+ * @param from One side of the edge
+ * @param to Other side of the edge
+ * 
+ * @return edge weight if edge exists, 0 in case of no edge
+ */
+int sud_graph::check_edge( int from, int to )
+{
+	if( from < 0 || to < 0 )
+		return 0;
+	if( from >= list.size() || to >= list.size() )
+		return 0;
+
+	pair<int,int> ret;
+	ret = list[from].get_edge( to );
+	if( ret->first != -1 )
+		return ret->second;
+	else
+		return 0;
+	
+}
 
 int sud_graph::print_graph_graphviz( string filename )
 {
@@ -246,7 +134,7 @@ int sud_graph::print_graph_graphviz( string filename )
 	return 1;
 }
 	
-
+/*
 #define SIZE 6
 
 int main()
@@ -265,4 +153,5 @@ int main()
 	system("dot -Tsvg -O trial.dot");
 	
 }
+*/
 						
