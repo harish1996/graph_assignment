@@ -103,8 +103,8 @@ int sud_graph::check_edge( int from, int to )
 
 	pair<int,int> ret;
 	ret = list[from].get_edge( to );
-	if( ret->first != -1 )
-		return ret->second;
+	if( ret.first != -1 )
+		return ret.second;
 	else
 		return 0;
 	

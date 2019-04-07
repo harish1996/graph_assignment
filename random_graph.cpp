@@ -1,7 +1,4 @@
-#include "sud_graph.h"
-#include <vector>
-#include <stdlib.h>
-#include <time.h>
+#include "random_graph.h"
 
 using namespace std;
 
@@ -13,19 +10,7 @@ void swap( vector<int>& arr, int from, int to )
 	arr[from] = temp;
 }
 
-/**
- * @func generate_random_connected_graph
- * @brief Generate random connected graph with given number of vertices and the
- *       given sparsity ( no.of edges )
- *
- * @param graph Reference to an sud_graph object
- * @param vertices Number of vertices
- * @param sparseness No. of edges required
- * 
- * @return -1 if vertices < n-1 ( connected graph not possible ), 
- *         -2 if vertices > nC2 ( simple graph not possible ),
- *          0 if successful
- */
+
 int generate_random_connected_graph( sud_graph& graph, int vertices, int sparseness )
 {
 	if( sparseness < vertices - 1 ){
@@ -98,7 +83,7 @@ int generate_random_connected_graph( sud_graph& graph, int vertices, int sparsen
 		to = ( rand()%nc );
 
 		// Put an edge between them with a random integer weight
-		graph.add_edge( start+from, start+to, rand()%100 );
+		graph.add_edge( start+arr[from], start+arr[to], rand()%100 );
 
 		// Moving the selected non connected vertex to connected set
 		swap( arr, to, nc-1 );
@@ -121,7 +106,7 @@ int generate_random_connected_graph( sud_graph& graph, int vertices, int sparsen
 
 		// If edge is already present, move it to existing edges and continue to next
 		// iteration
-		if( graph.check_edge( start+from, start+to ) != 0 ){
+		if( from == to || graph.check_edge( start+from, start+to ) != 0 ){
 			
 			// Moving the corresponding edges to present array
 			swap( edge_arr, num, --enp );
@@ -129,7 +114,7 @@ int generate_random_connected_graph( sud_graph& graph, int vertices, int sparsen
 		}
 		else{
 			// Add new edge between the from and to
-			graph.add_edge( start+from, start+to, rand()%100 );
+			graph.add_edge( start+from, start+to, rand()%100 + 1 );
 			swap( edge_arr, num, --enp);
 			sparseness--;
 		}
@@ -138,7 +123,34 @@ int generate_random_connected_graph( sud_graph& graph, int vertices, int sparsen
 	return 0;
 }
 
+/*
+#define SIZE 15
+#define EDGES 105
+#define SIZE2 10
+#define EDGES2 45
 
+int main()
+{
+	//vector< vector<int> > matrix( SIZE,vector<int>(SIZE) );
+	//int a[][SIZE]={ {1,5,0,0,2,0},{0,1,6,4,7,3},{0,0,1,8,3,1},{0,0,0,1,0,2},{0,0,0,0,1,0},{0,0,0,0,0,1}};
+
+	//for( int i=0; i<SIZE; i++ ){
+	//	for( int j=0; j<SIZE; j++ ){
+	//		matrix[i][j] = a[i][j];
+	//	}
+	//}
+	int ret;
+	sud_graph graph;
+	ret = generate_random_connected_graph( graph, SIZE, EDGES ); 
+	graph.print_graph();
+	graph.print_graph_graphviz( "random.dot" );
+	system("dot -Tsvg -O random.dot");
+	ret = generate_random_connected_graph( graph, SIZE2, EDGES2 );
+	graph.print_graph_graphviz( "second.dot" );
+	system("dot -Tsvg -O second.dot");
+}
+
+*/
 
 	
 

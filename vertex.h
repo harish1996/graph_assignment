@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <stdio.h>
 
+using namespace std;
 class vertex {
  private:
 	/* edge weight and index of the destination vertex */
