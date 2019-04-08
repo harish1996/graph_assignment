@@ -22,7 +22,10 @@ class vertex {
 	
  public:
 	/* Constructor for vector with names */
-	vertex( string s) : name(s) {}
+	vertex( string s) : name(s)
+	{
+		cout<< unnamed_instances;
+	}
 
 	/* Constructor for vertices without names */
 	vertex();

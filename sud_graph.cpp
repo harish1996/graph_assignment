@@ -3,46 +3,28 @@
 
 using namespace std;
 
-int sud_graph::add_vertex( string name )
-{
-	vertex temp(name);
-	list.push_back( temp );
-	return list.size() - 1;
-}
-
-
-int sud_graph::add_vertex( )
-{
-	vertex temp;
-	list.push_back( temp );
-	return list.size() - 1;
-}
-
-int sud_graph::add_vertex( int n )
-{
-	for( int i=0; i<n; i++ )
-		add_vertex();
-	return list.size() - 1;
-}
-
+/**
+ * @func add_edge
+ * @brief Adds an edge between `from` and `to` with weight `weight`
+ *
+ * @param from Starting vertex of the edge
+ * @param to Terminating vertex of the edge
+ * @param weight Weight of the edge
+ */
 void sud_graph::add_edge( int from, int to, int weight )
 {
 	list[from].add_edge( to, weight );
 	list[to].add_edge( from,weight );
 }	
 
-vertex sud_graph::get_vertex( int n )
-{
-	vertex ret( "invalid" );
-	if( n <= list.size() ){
-		return list[n];
-	}
-	else{
-		return ret;
-	}
-}
-
-sud_graph::sud_graph( vector<vector<int>> adjacency_matrix, int size )
+/**
+ * @func sud_graph
+ * @brief Constructor for simple directed graph
+ *
+ * @param adjacency_matrix An adjacency matrix depicting the directed graph
+ * @param size Number of vertices.
+ */
+sud_graph::sud_graph( vector<vector<int>> adjacency_matrix, int size ) : sd_graph()
 {
 	/* Skip creating graph, if size doesnt match */
 	if( adjacency_matrix.size() == size ){
@@ -68,11 +50,10 @@ sud_graph::sud_graph( vector<vector<int>> adjacency_matrix, int size )
 	}
 }
 
-int sud_graph::get_graph_size()
-{
-	return list.size();
-}
-
+/**
+ * @func print_graph
+ * @brief Prints all the edges of the graph to stdout
+ */
 void sud_graph::print_graph( )
 {
 	vertex ret;
@@ -85,31 +66,16 @@ void sud_graph::print_graph( )
 		}
 	}
 }
+
 /**
- * @func check_edge 
- * @brief Checks whether there is an edge between from and to and returns
- *        the weight of the edge if it exists
- * @param from One side of the edge
- * @param to Other side of the edge
+ * @func print_graph_graphviz
+ * @brief Prints the graph in graphviz format to the file mentioned by
+ *        `filename`
  * 
- * @return edge weight if edge exists, 0 in case of no edge
+ * @param filename File name of the output graphviz file
+ *
+ * @return 1 on success, -1 on failure
  */
-int sud_graph::check_edge( int from, int to )
-{
-	if( from < 0 || to < 0 )
-		return 0;
-	if( from >= list.size() || to >= list.size() )
-		return 0;
-
-	pair<int,int> ret;
-	ret = list[from].get_edge( to );
-	if( ret.first != -1 )
-		return ret.second;
-	else
-		return 0;
-	
-}
-
 int sud_graph::print_graph_graphviz( string filename )
 {
 	FILE *fp = fopen(filename.c_str(),"w");
@@ -117,7 +83,6 @@ int sud_graph::print_graph_graphviz( string filename )
 		return -1;
 	}
 	fprintf(fp,"digraph{\n");
-	vertex ret;
 	auto size =  list.size();
 	for( int i=0; i< size; i++ ){
 		auto it = list[i].cbegin();
@@ -152,6 +117,5 @@ int main()
 	graph.print_graph_graphviz( "trial.dot" );
 	system("dot -Tsvg -O trial.dot");
 	
-}
+}						
 */
-						

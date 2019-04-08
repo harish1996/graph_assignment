@@ -131,7 +131,6 @@ int sd_graph::get_graph_size()
  */
 void sd_graph::print_graph( )
 {
-	vertex ret;
 	auto size =  list.size();
 	for( int i=0; i< size; i++ ){
 		auto it = list[i].cbegin();
@@ -183,7 +182,6 @@ int sd_graph::print_graph_graphviz( string filename )
 		return -1;
 	}
 	fprintf(fp,"digraph{\n");
-	vertex ret;
 	auto size =  list.size();
 	for( int i=0; i< size; i++ ){
 		auto it = list[i].cbegin();

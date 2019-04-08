@@ -19,6 +19,9 @@
  *         -2 if vertices > nC2 ( simple graph not possible ),
  *          0 if successful
  */
-int generate_random_connected_graph( sud_graph& graph, int vertices, int sparseness );
+template <class T>
+int generate_random_connected_graph( T& graph, int vertices, int sparseness );
+
+#include "random_graph.tpp"
 
 #endif

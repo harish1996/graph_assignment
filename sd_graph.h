@@ -7,6 +7,8 @@
 #include "vertex.h"
 
 class sd_graph {
+
+ protected:
 	/* Adjacency list */
 	vector<vertex> list;
 
