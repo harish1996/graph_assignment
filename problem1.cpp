@@ -21,11 +21,14 @@ int custom_atoi( char *arg, int& num  )
 
 void usage( char* arg )
 {
-	cout<<arg<<" <Size of graph> <Number of edges>\n";
+	cout<<arg<<" <Size of graph> <Number of edges> <type>\n";
+	cout<<" Size of the graph - Integer\n";
+	cout<<" Number of edges - Integer\n";
+	cout<<" type - d(irectied) or ud(undirected)\n";
 }
 
 template<class T>
-int _dfs( T& graph, vector<bool>& list, int cur, FILE *fp )
+int _dfs( T& graph, vector<bool>& list, int cur, FILE *fp, int level )
 {
 	vertex ver = graph.get_vertex( cur );
 	//vertex ver;
@@ -33,13 +36,18 @@ int _dfs( T& graph, vector<bool>& list, int cur, FILE *fp )
 
 	list[cur] = true;
 	fprintf(fp,"%d [ label = %s ]\n",cur,ver.get_name().c_str());
+	//for( int i=0; i<level; i++ ) cout<<"\t";
+	cout<<cur<<"\n";
 	for( ; start != end; start ++ ){
 		
 		// If the vertex is not already visited
 		if( list[start->first] == false ){
-			cout<<cur<<" --"<<start->second<<"--> "<<start->first<<"\n";
+			for( int i=0; i<level+1; i++ ) cout<<"|";
+			cout<<"-";
+			cout<<" "<<start->second<<" ";
+			//cout<<cur<<" --"<<start->second<<"--> "<<start->first<<"\n";
 			fprintf(fp,"%d->%d [ label = %d,color=\"green\" ]\n",cur,start->first,start->second);
-			_dfs( graph, list, start->first, fp );
+			_dfs( graph, list, start->first, fp, level+1 );
 		}
 		else{
 			fprintf(fp,"%d->%d [ label = %d,color=\"red\" ]\n",cur,start->first,start->second);
@@ -62,8 +70,12 @@ int dfs( T& graph, string filename )
 
 	for( int i=0; i<size; i++ )
 		list[i] = false;
+	
 	fprintf(fp,"digraph{\n");
-	ret = _dfs( graph, list, 0, fp );
+        for( int i=0; i<size; i++ ){
+		if( list[i] == false )
+			ret = _dfs( graph, list, i, fp, 0 );
+	}
 	fprintf(fp,"\n}");
 	fclose(fp);
 	return ret;
@@ -73,10 +85,12 @@ int main( int argc, char *argv[])
 {
 	int ret;
 	sud_graph graph;
+	sd_graph dgraph;
 	int n,edges;
 	char *endptr;
+	string type;
 	
-	if( argc != 3 ){
+	if( argc != 4 ){
 		usage(argv[0]);
 		exit(-1);
 	}
@@ -89,9 +103,22 @@ int main( int argc, char *argv[])
 		usage(argv[0]);
 		exit(-1);
 	}
+
+	type = argv[3];
+
+	if( type == "ud" ){
+		ret = generate_random_connected_graph( graph, n, edges );
+		ret = dfs( graph,"problem1.dot" );
+	}
+	else if( type == "d" ){
+		ret = generate_random_connected_graph( dgraph, n, edges );
+		ret = dfs( dgraph,"problem1.dot" );
+	}
+	else{
+		usage(argv[0]);
+		exit(-1);
+	}
 	
-	ret = generate_random_connected_graph( graph, n, edges );
-	ret = dfs( graph,"problem1.dot" );
 	//graph.print_graph_graphviz( "problem1.dot" );
 	system(" dot -Tsvg -O problem1.dot" );
 }
