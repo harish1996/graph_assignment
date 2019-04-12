@@ -20,6 +20,15 @@ class sud_graph : public sd_graph {
 	void add_edge( int from, int to, int weight );
 
 	//
+	// @func delete_edge
+	// @brief Deletes an undirected edge
+	//
+	// @param from One side of the edge
+	// @param to Other side of the edge
+	//	
+	void delete_edge( int from, int to );
+
+	//
 	// @func print_graph
 	// @brief Prints the graph in the stdio
 	//

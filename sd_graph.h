@@ -25,6 +25,9 @@ class sd_graph {
 	/* Add edge */
 	void add_edge( int from, int to, int weight );
 
+	// Deletes edge between from and to
+	int delete_edge( int from, int to );
+	
 	/* Get nth vertex in the graph */
 	vertex get_vertex( int n );
 

@@ -24,7 +24,7 @@ void usage( char* arg )
 	cout<<arg<<" <Size of graph> <Number of edges> <type>\n";
 	cout<<" Size of the graph - Integer\n";
 	cout<<" Number of edges - Integer\n";
-	cout<<" type - d(irectied) or ud(undirected)\n";
+	cout<<" type - d(irectied) or ud(undirected) or dag( Directed acyclic graph )\n";
 }
 
 template<class T>
@@ -112,6 +112,11 @@ int main( int argc, char *argv[])
 	}
 	else if( type == "d" ){
 		ret = generate_random_connected_graph( dgraph, n, edges );
+		
+		ret = dfs( dgraph,"problem1.dot" );
+	}
+	else if( type == "dag" ){
+		ret = generate_random_DAG( dgraph, n, edges );
 		ret = dfs( dgraph,"problem1.dot" );
 	}
 	else{

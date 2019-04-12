@@ -42,6 +42,14 @@ class vertex {
 	/* Add new edge from the vertex */
 	int add_edge( pair<int,int>& x );
 
+	// \func delete_edge
+	// \brief Deletes an edge if present
+	//
+	// \param n Index of the edge to be deleted
+	//
+	// \return 0 on success, -1 if n doesnt exist first of all
+	int delete_edge( int n );
+
 	/* Returns constant iterator to the start of the vertex set */
 	unordered_map<int,int>::const_iterator cbegin();
 

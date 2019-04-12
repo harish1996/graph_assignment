@@ -49,6 +49,17 @@ int vertex::add_edge( pair<int,int>& x )
 		return -1;
 }
 
+int vertex::delete_edge( int n )
+{
+	unordered_map<int,int>::iterator res = adjacency.find(n);
+	int ret = -1;
+	if( res != adjacency.end() ){
+		adjacency.erase(n);
+		ret = 0;
+	}
+	return ret;
+}
+
 unordered_map<int,int>::const_iterator vertex::cbegin()
 {
 	return adjacency.cbegin();

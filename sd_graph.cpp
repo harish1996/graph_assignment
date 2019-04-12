@@ -62,6 +62,18 @@ void sd_graph::add_edge( int from, int to, int weight )
 }	
 
 /**
+ * @func delete_edge
+ * @brief Deletes the edge from `from` to `to`.
+ *
+ * @param from,to Origin and destination of the edge
+ */
+int sd_graph::delete_edge( int from, int to )
+{
+	list[from].delete_edge( to );
+}
+
+
+/**
  * @func get_vertex
  * @brief Returns nth vertex
  * 

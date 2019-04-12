@@ -210,3 +210,111 @@ int generate_random_connected_graph( T& graph, int vertices, int sparseness )
 
 	return ret;
 }
+
+/**
+ * @func _remove_backedges
+ * @brief Helper recursive function for removing backedges from a directed graph
+ *
+ * @param graph Reference to the graph
+ * @param cur Current vertex
+ * @param ancestry Vector keeping track of ancestry
+ * @param visited Vector keeping track of visited nodes
+ *
+ * @return 0 on success
+ */
+int _remove_backedges( sd_graph& graph, int cur, vector<bool>& ancestry, vector<bool>& visited )
+{
+	vertex ver = graph.get_vertex( cur );
+	auto begin = ver.cbegin();
+	auto end = ver.cend();
+
+	ancestry[cur] = true;
+	visited[cur] = true;
+	
+	for( ; begin != end; begin++ ){
+
+		if( ancestry[begin->first] == true ){
+			graph.delete_edge( cur, begin->first );
+		}
+		else{
+			_remove_backedges( graph, begin->first, ancestry, visited );
+		}
+	}
+	
+	ancestry[cur] = false;
+
+	return 0;
+}
+
+/**
+ * @func remove_backedges
+ * @brief User facing function which removes back edges in a directed graph
+ *
+ * @param graph Graph reference
+ * @param start Start of the DAG vertices
+ * @param end End of the DAG vertices
+ *
+ * @return 0 on success
+ */
+int remove_backedges( sd_graph& graph, int start, int end )
+{
+	int size = graph.get_graph_size();
+	
+	vector<bool> ancestry( size, false);
+	vector<bool> visited( size, false);
+
+	/*
+	// Array required for generating random permutation.
+	// Expected apparent improvement in randomness.
+	vector<int> v_arr( end-start+1, 0);
+	
+	srand( time(NULL) );
+
+	// Generating a random permutation of vertices in the
+	// Directed graph. Random permutation is necessary because
+	// backedge removal will give different results for
+	// different strategies of backedge removal. But is it necessary ?
+	// This is Questionable.!
+	for( int i=0; i< end-start+1; i++ ){
+		int last = end-start+1-i
+		int index = rand()%(last);
+		
+		swap( v_arr, index, last );
+
+		if( !v_arr[index] ) v_arr[index] = start+last+1;
+		if( !v_arr[last] ) v_arr[last] = start+index+1;
+	}
+	*/
+	
+	for( int i=start; i<end; i++ ){
+		//int index = v_arr[i] - 1;
+		if( visited[ i ] == false )
+			_remove_backedges( graph, i, ancestry, visited );
+	}
+
+	return 0;
+}
+
+/**
+ * @func generate_random_DAG
+ * @brief Generates random Directed Acyclic Graph with a maximum `sparseness`
+ *
+ * Generates DAG by removing backedges from a directed graph which is generated
+ * in random.
+ *
+ * @param graph The reference to the graph 
+ * @param vertices Vertices to be added
+ * @param max_sparseness Maximum sparseness of the DAG
+ *
+ * @return 0 on success
+ */
+int generate_random_DAG( sd_graph& graph, int vertices, int max_sparseness )
+{
+	int size = graph.get_graph_size();
+	int ret;
+
+	ret = generate_random_graph( graph, vertices, max_sparseness );
+	ret = remove_backedges( graph, size, size + vertices - 1 );
+
+	return 0;
+}

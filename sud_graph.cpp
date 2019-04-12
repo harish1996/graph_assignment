@@ -18,6 +18,19 @@ void sud_graph::add_edge( int from, int to, int weight )
 }	
 
 /**
+ * @func delete_edge
+ * @brief Deletes an edge between `from` and `to`.
+ *
+ * @param from Starting vertex of the edge
+ * @param to Terminating vertex of the edge
+ */
+void sud_graph::delete_edge( int from, int to )
+{
+	list[from].delete_edge( to );
+	list[to].delete_edge( from );
+}	
+
+/**
  * @func sud_graph
  * @brief Constructor for simple directed graph
  *
