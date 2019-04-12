@@ -314,6 +314,8 @@ int generate_random_DAG( sd_graph& graph, int vertices, int max_sparseness )
 	int ret;
 
 	ret = generate_random_graph( graph, vertices, max_sparseness );
+	if( ret )
+		return -1;
 	ret = remove_backedges( graph, size, size + vertices - 1 );
 
 	return 0;
