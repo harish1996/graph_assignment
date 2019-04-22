@@ -1,15 +1,18 @@
 CPPFLAGS= -std=c++11
 
 .PHONY:all testing
-all: problem1 problem3
+all: problem1 problem3 problem5a
 
 testing: random_graph
 
 problem1: problem1.o sud_graph.o sd_graph.o vertex.o
-	g++ ${cPPFLAGS} -g $^ -o $@
+	g++ ${CPPFLAGS} -g $^ -o $@
 
 problem3: problem3.o sud_graph.o sd_graph.o vertex.o
-	g++ ${cPPFLAGS} -g $^ -o $@
+	g++ ${CPPFLAGS} -g $^ -o $@
+
+problem5a: problem5a.o sud_graph.o sd_graph.o vertex.o
+	g++ ${CPPFLAGS} -g $^ -o $@
 
 sud_graph: sud_graph.o sd_graph.o vertex.o
 	g++ -std=c++11 -g $^ -o $@
