@@ -67,14 +67,58 @@ int find_highest_postvisit( sd_graph& graph, vector<bool> visited )
 			
 int reverse_graph( sd_graph& graph, sd_graph& reversed )
 {
+	int size = graph.get_graph_size();
+	reversed.add_vertex( size );
+
+	for( int i=0; i<size; i++ ){
+		vertex v = graph.get_vertex( i );
+		auto begin = v.cbegin(), end = v.cend();
+
+		for( ; begin != end; begin++ ){
+			reversed.add_edge( begin->first, i, begin->second );
+		}
+	}
+
+	return 0;
+}
 
 int scc_dfs( sd_graph& graph, int start, vector<bool>& visited, vector<int>& arr )
 {
+	vertex v = graph.get_vertex( start );
 
-int find_strongly_connected_components( sd_graph& graph, vector<vector<int>& arr )
+	auto begin = v.cbegin(), end = v.cend();
+	visited[start] = true;
+	arr.push_back( start );
+	for( ; begin != end; begin++ ){
+		if( visited[begin->first] == false )
+			scc_dfs( graph, begin->first, visited, arr );
+	}
+}
+
+int find_strongly_connected_components( sd_graph& graph, vector<vector<int>>& arr )
 {
+	sd_graph reversed;
+	int size = graph.get_graph_size();
+	int detected = 0;
+	vector<bool> visited( size, false );
+	int ret;
+	int i=0;
+	vector<int> tmp;
 
 	arr.clear();
+
+	ret = reverse_graph( graph, reversed );
+
+	while( detected != size ){
+		arr.push_back( tmp );
+		ret = find_highest_postvisit( reversed, visited );
+		ret = scc_dfs( graph, ret, visited, arr[i] );
+		detected += arr[i].size();
+		i++;
+	}
+
+	return 0;
+}
 
 int main( int argc, char *argv[] )
 {
@@ -98,19 +142,20 @@ int main( int argc, char *argv[] )
 		exit(-1);
 	}
 
-	ret = generate_random_connected_graph( dgraph, n, edges );	
+	ret = generate_random_graph( dgraph, n, edges );	
 	ret = find_strongly_connected_components( dgraph, arr );
 	
-	ret = dgraph.print_graph_graphviz( "problem5b.dot" );
-	system( " dot -Tsvg -O problem5b.dot " );
+	ret = dgraph.print_graph_graphviz( "problem2.dot" );
+	system( " dot -Tsvg -O problem2.dot " );
 	
 	int size = arr.size();
 	for( int i=0; i<size; i++ ){
 		int scc_size = arr[i].size();
-		cout<<"Strongly Connected Component "<<i<<" contains:\n"
+		cout<<"Strongly Connected Component "<<i<<" contains:\n";
 		for( int j=0; j<scc_size; j++ ){
-			cout<<arr[i][j];
+			cout<<arr[i][j]<<" ";
 		}
+		cout<<endl;
 	}
 			
 	/*
