@@ -139,15 +139,15 @@ bool edge_comp( edge& first, edge& second )
 	return ( first.second > second.second );
 }
 
-int kruskal_mst( sud_graph& graph, vector<pair<int,int>>& arr )
+int kruskal_mst( sud_graph& graph, vector<edge>& arr )
 {
 	int size = graph.get_graph_size();
 	d_set set(size);
 	vector< edge > elist; 
 	arr.clear();
 	int taken=0;
-	arr.reserve( size );
-	arr.resize( size, pair<int,int>(-1,0) );
+	arr.reserve( size-1 );
+	arr.resize( size-1, edge(sides(-1,-1),0) );
 
 	for( int i=0; i<size; i++ ){
 		vertex v = graph.get_vertex( i );
@@ -164,7 +164,7 @@ int kruskal_mst( sud_graph& graph, vector<pair<int,int>>& arr )
 	sort( elist.begin(), elist.end(), edge_comp );
 	taken = 1;
 	while( taken <= size - 1 ){
-		cout<<elist.size()<<endl;
+		//cout<<elist.size()<<endl;
 		edge e = elist.back();
 		sides s = e.first;
 		int rep1,rep2;
@@ -175,10 +175,8 @@ int kruskal_mst( sud_graph& graph, vector<pair<int,int>>& arr )
 
 		if( rep1 != rep2 ){
 			int ret = set.set_union( rep1, rep2 );
-		       	if( ret == 1 )
-				arr[s.second] = pair<int,int>( s.first, e.second );	
-			else if( ret == 2 )
-				arr[s.first] = pair<int,int>( s.second, e.second );
+		       	//cout<<ret<<endl;
+			arr[ taken-1 ] = edge( sides( s.first, s.second ) , e.second );
 			taken++;
 		}
 	}	
@@ -195,7 +193,7 @@ int main( int argc, char *argv[] )
 	int n,edges;
 	int source;
 	string type;
-	vector<pair<int,int>> arr;
+	vector<edge> arr;
 	FILE *fp = fopen("mst.dot", "w" );
 	if( !fp ){
 		exit(-1);
@@ -225,9 +223,9 @@ int main( int argc, char *argv[] )
 	int size = arr.size();
 	fprintf(fp,"digraph{\n");
 	for( int i=0; i< size; i++ ){
-		if( arr[i].first != -1 )
+		if( arr[i].first.first != -1 )
 			//cout<<i<<"->"<<arr[i].first<<" [ label= "<<arr[i].second<<" ]\n";
-			fprintf(fp,"%d->%d [ label=\"%d\",dir=none ]\n",i,arr[i].first,arr[i].second);
+			fprintf(fp,"%d->%d [ label=\"%d\",dir=none ]\n",arr[i].first.first,arr[i].first.second,arr[i].second);
 	}
 	fprintf(fp,"}\n");
 	fclose(fp);
