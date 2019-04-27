@@ -1,7 +1,7 @@
 CPPFLAGS= -std=c++11
 
 .PHONY:all testing
-all: problem1 problem2 problem3a problem4 problem5a problem5b
+all: problem1 problem2 problem3a problem3b problem4 problem5a problem5b
 
 testing: random_graph
 
@@ -12,6 +12,9 @@ problem2: problem2.o sud_graph.o sd_graph.o vertex.o
 	g++ ${CPPFLAGS} -g $^ -o $@
 
 problem3a: problem3a.o sud_graph.o sd_graph.o vertex.o
+	g++ ${CPPFLAGS} -g $^ -o $@
+
+problem3b: problem3b.o sud_graph.o sd_graph.o vertex.o
 	g++ ${CPPFLAGS} -g $^ -o $@
 
 problem4: problem4.o sud_graph.o sd_graph.o vertex.o
