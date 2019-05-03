@@ -5,6 +5,7 @@
 #include <vector>
 #include <stdio.h>
 #include <string>
+#include "input.h"
 
 using namespace std;
 
@@ -21,7 +22,8 @@ int custom_atoi( char *arg, int& num  )
 
 void usage( char* arg )
 {
-	cout<<arg<<" <Size of graph> <Number of edges> <type>\n";
+	cout<<arg<<" -f <filename> /-r<Size of graph> <Number of edges> <type>\n";
+	cout<<" filename - Input filename with the graph\n";
 	cout<<" Size of the graph - Integer\n";
 	cout<<" Number of edges - Integer\n";
 	cout<<" type - d(irectied) or ud(undirected) or dag( Directed acyclic graph )\n";
@@ -89,41 +91,91 @@ int main( int argc, char *argv[])
 	int n,edges;
 	char *endptr;
 	string type;
+#define FILE_MODE 1
+#define RANDOM_MODE 2
+	char mode;
+	char *filename;
 	
-	if( argc != 4 ){
+	if( argc < 2 ){
 		usage(argv[0]);
 		exit(-1);
 	}
+//
+//	if( custom_atoi( argv[1], n ) ){
+//		usage(argv[0]);
+//		exit(-1);
+//	}
+//	if( custom_atoi( argv[2], edges ) ){
+//		usage(argv[0]);
+//		exit(-1);
+//	}
+	
+	if( !strcmp( argv[1], "-f" ) ){
+		if( argc != 3 ){
+			usage(argv[0]);
+			exit(-1);
+		}
+		else{
+			mode = FILE_MODE;
+			filename = argv[2];
+		}
+	}
+	else if( !strcmp( argv[1], "-r" ) ){
+		if( argc != 5 ){
+			usage(argv[0]);
+			exit(-1);
+		}
+		else{
+			mode = RANDOM_MODE;
+			if( custom_atoi( argv[2], n ) ){
+				usage( argv[0] );
+				exit(-1);
+			}
+			if( custom_atoi( argv[3], edges ) ){
+				usage( argv[0] );
+				exit(-1);
+			}
+			type = argv[4];
+		}
+	}
 
-	if( custom_atoi( argv[1], n ) ){
-		usage(argv[0]);
-		exit(-1);
-	}
-	if( custom_atoi( argv[2], edges ) ){
-		usage(argv[0]);
-		exit(-1);
-	}
+	if( mode == RANDOM_MODE ){
+		if( type == "ud" ){
+			ret = generate_random_connected_graph( graph, n, edges );
+			ret = dfs( graph,"problem1.dot" );
+		}
+		else if( type == "d" ){
+			ret = generate_random_connected_graph( dgraph, n, edges );
 
-	type = argv[3];
-
-	if( type == "ud" ){
-		ret = generate_random_connected_graph( graph, n, edges );
-		ret = dfs( graph,"problem1.dot" );
-	}
-	else if( type == "d" ){
-		ret = generate_random_connected_graph( dgraph, n, edges );
-		
-		ret = dfs( dgraph,"problem1.dot" );
-	}
-	else if( type == "dag" ){
-		ret = generate_random_DAG( dgraph, n, edges );
-		ret = dfs( dgraph,"problem1.dot" );
+			ret = dfs( dgraph,"problem1.dot" );
+		}
+		else if( type == "dag" ){
+			ret = generate_random_DAG( dgraph, n, edges );
+			ret = dfs( dgraph,"problem1.dot" );
+		}
+		else{
+			usage(argv[0]);
+			exit(-1);
+		}
 	}
 	else{
-		usage(argv[0]);
-		exit(-1);
-	}
-	
+#define WRONG_FORMAT -2
+#define SUCCESS 0
+		ret = read_directed_graph( filename, dgraph );
+		if( ret == SUCCESS ){
+			ret = dfs( dgraph, "problem1.dot" );
+		}
+		else{
+			ret = read_undirected_graph( filename, graph );
+			if( ret == SUCCESS ){
+				ret = dfs( graph, "problem1.dot" );
+			}
+			else{
+				usage(argv[0]);
+				exit(-1);
+			}
+		}
+	}		
 	//graph.print_graph_graphviz( "problem1.dot" );
 	system(" dot -Tsvg -O problem1.dot" );
 }

@@ -2,7 +2,17 @@
 #include "sud_graph.h"
 #include <string.h>
 #include <cstdlib>
+#include "random_graph.h"
 
+/**
+ * @func copy_file
+ * @brief Copies entire contents of a file to the buffer
+ *
+ * @param filename
+ * @param buf The target buffer
+ *
+ * @return size of the file on success, -1 on failure
+ */
 int copy_file( char* filename, char* &buf )
 {
 	FILE *fp;
@@ -26,6 +36,16 @@ int copy_file( char* filename, char* &buf )
 	return size;
 }
 
+/**
+ * @func readline_list
+ * @brief Reads a line of the buffer as a list
+ *
+ * @param buf Buffer to read from
+ * @param edges The edge
+ * @param weight Weight of the corresponding edge
+ *
+ * @return length of the line on success, negative on failure
+ */ 
 int readline_list( char* buf, pair<int,int>& edges, int& weight )
 {
 	char read = 0;
@@ -203,7 +223,8 @@ int read_undirected_graph( char *filename, sud_graph& graph )
 		read_list( buf, graph );
 	else
 		read_matrix( buf, graph );
-
+	
+	ret = 0;
 ru_wrong_format:
 ru_no_file:
 	return ret;
@@ -246,12 +267,101 @@ int read_directed_graph( char *filename, sd_graph& graph )
 		read_list( buf, graph );
 	else
 		read_matrix( buf, graph );
-
+	ret = 0;
 rd_wrong_format:
 rd_no_file:
 	return ret;
 }
 
+	template <class T>
+int _write_list( T& graph, char *filename, char directed )
+{
+	FILE *fp = fopen( filename, "w" );
+       	if( !fp ) return -1;
+
+	if( directed )
+		fprintf(fp,"dl\n");	
+	else
+		fprintf(fp,"ul\n");
+
+	int size = graph.get_graph_size();
+
+	for( int i=0; i<size; i++ ){
+		vertex v = graph.get_vertex( i );
+		auto begin = v.cbegin(), end = v.cend();
+
+		for( ; begin != end; begin++ ){
+			if( directed || begin->first > i ) fprintf(fp,"%d %d %d\n",i,begin->second,begin->first);
+		}
+	}
+	
+	fclose(fp);
+	return 0;
+}
+
+template <class T>
+int write_list( T& graph, char *filename );
+
+template<> int write_list<sd_graph>( sd_graph& graph, char *filename )
+{
+	return _write_list( graph, filename, 1 );
+}
+
+template<> int write_list<sud_graph>( sud_graph& graph, char *filename )
+{
+	return _write_list( graph, filename, 0 );
+}
+
+	template <class T>
+int _write_matrix( T& graph, char *filename, char directed )
+{
+	FILE *fp = fopen( filename, "w" );
+       	if( !fp ) return -1;
+
+	if( directed )
+		fprintf(fp,"dm\n");	
+	else
+		fprintf(fp,"um\n");
+
+	int size = graph.get_graph_size();
+
+	for( int i=0; i<size; i++ ){
+		//vertex v = graph.get_vertex( i );
+		/*
+		auto begin = v.cbegin(), end = v.cend();
+
+		for( ; begin != end; begin++ ){
+			if( directed || begin->first > i ) fprintf(fp,"%d %d %d\n",i,begin->second,begin->first);
+		}
+		*/
+		for( int j=0; j<size; j++ ){
+			if( j != i ){
+				fprintf(fp,"%d ",graph.check_edge( i, j ));
+			}
+			else
+				fprintf(fp,"0 ");
+		}
+		fprintf(fp,"\n");
+	}
+	
+	fclose(fp);
+	return 0;
+}
+
+template <class T>
+int write_matrix( T& graph, char *filename );
+
+template<> int write_matrix<sd_graph>( sd_graph& graph, char *filename )
+{
+	return _write_matrix( graph, filename, 1 );
+}
+
+template<> int write_matrix<sud_graph>( sud_graph& graph, char *filename )
+{
+	return _write_matrix( graph, filename, 0 );
+}
+
+/*
 int main( int argc, char* argv[] )
 {
 	pair<int,int> a;
@@ -259,21 +369,34 @@ int main( int argc, char* argv[] )
 	int ret;
 	sd_graph dgraph;
 	sud_graph udgraph;
+	int vertices,edges;
 
-	if( argc != 2 ){
-		printf(" need atleast one argument\n");
+	if( argc != 4 ){
+		printf(" need atleast one argument filename\n");
 		return 0;
 	}
-/*
+
+
 	ret = read_directed_graph( argv[1], dgraph );
        	dgraph.print_graph_graphviz( "graph.dot" );
 	system( "dot -Tsvg -O graph.dot" );	
-*/
-	ret = read_undirected_graph( argv[1], udgraph );
-       	udgraph.print_graph_graphviz( "graph.dot" );
-	system( "dot -Tsvg -O graph.dot" );
 
-	/*
+	vertices = atoi( argv[2] );
+	edges = atoi( argv[3] );
+	//ret = read_undirected_graph( argv[1], udgraph );
+       	
+	ret = generate_random_graph( dgraph, vertices, edges );
+       	ret = write_matrix( dgraph, "rdgraph_m" );	
+	dgraph.print_graph_graphviz( "graph_d.dot" );
+	system( "dot -Tsvg -O graph_d.dot" );
+
+	ret = generate_random_graph( udgraph, vertices, edges );
+       	ret = write_matrix( udgraph, "rudgraph_m" );
+	udgraph.print_graph_graphviz( "graph_ud.dot" );
+	system( "dot -Tsvg -O graph_ud.dot" );
+
+
+	
 	char *str="   54 45 83\n4         7            5\n5 3 2\n5            5 2\n";
 	int len = strlen(str);
 	int read = 0;
@@ -282,7 +405,8 @@ int main( int argc, char* argv[] )
 		cout<< str+read <<endl;
 		cout<< a.first<< endl<<a.second<<endl<< w<<endl;
 	}
-	*/
+	
 }
+*/
 
 
