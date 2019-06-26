@@ -2,6 +2,8 @@
 #include <vector>
 #include "random_graph.h"
 #include "sud_graph.h"
+#include <string.h>
+#include "input.h"
 
 using namespace std;
 
@@ -27,7 +29,8 @@ int custom_atoi( char *arg, int& num  )
 
 void usage( char* arg )
 {
-	cout<<arg<<" <Size of graph> <Number of edges> <type> <source>\n";
+	cout<<arg<<" -f <filename> /-r<Size of graph> <Number of edges>\n";
+	cout<<" filename - Input filename with the graph\n";
 	cout<<" Size of the graph - Integer\n";
 	cout<<" Number of edges - Integer\n";
 }
@@ -48,6 +51,15 @@ int _find_highest_postvisit( sd_graph& graph, int start, vector<bool>& visited )
 	return 0;
 }
 
+/**
+ * @func find_highest_postvisit
+ * @brief Finds the highest postivisit number in the graph after dfs
+ *
+ * @param graph
+ * @param visited visited boolean array
+ *
+ * @return vertex index of the highest postvisit number, negative on failure
+ */
 int find_highest_postvisit( sd_graph& graph, vector<bool> visited )
 {
 	int largest;
@@ -64,7 +76,15 @@ int find_highest_postvisit( sd_graph& graph, vector<bool> visited )
 	return largest;
 }
 
-			
+/**
+ * @func reverse_graph
+ * @brief Reverse the given graph
+ *
+ * @param graph The input graph
+ * @param reversed The graph object to store the reversed graph in
+ *
+ * @return 0 on success , negative on failure
+ */	
 int reverse_graph( sd_graph& graph, sd_graph& reversed )
 {
 	int size = graph.get_graph_size();
@@ -82,6 +102,17 @@ int reverse_graph( sd_graph& graph, sd_graph& reversed )
 	return 0;
 }
 
+/**
+ * @func scc_dfs
+ * @brief DFS helper for strongly connected components
+ *
+ * @param graph
+ * @param start Start point of the dfs
+ * @param visited Visited array
+ * @param arr Array to store all the vertices in
+ *
+ * @return 0 on success
+ */
 int scc_dfs( sd_graph& graph, int start, vector<bool>& visited, vector<int>& arr )
 {
 	vertex v = graph.get_vertex( start );
@@ -93,8 +124,17 @@ int scc_dfs( sd_graph& graph, int start, vector<bool>& visited, vector<int>& arr
 		if( visited[begin->first] == false )
 			scc_dfs( graph, begin->first, visited, arr );
 	}
+	return 0;
 }
-
+/**
+ * @func find_strongly_connected_components
+ * @brief Finds the strongly connected components in the given graph
+ *
+ * @param graph
+ * @param arr Array of arrays where each array represent a strongly connected 
+ *		component
+ * @return 0 on success, negative on failure
+ */
 int find_strongly_connected_components( sd_graph& graph, vector<vector<int>>& arr )
 {
 	sd_graph reversed;
@@ -127,22 +167,50 @@ int main( int argc, char *argv[] )
 	int n,edges;
 	//string type;
 	vector<vector<int>> arr;
-		
-	if( argc != 3 ){
+#define FILE_MODE 1
+#define RANDOM_MODE 2
+	char mode;
+	char *filename;
+	
+	if( argc < 2 ){
 		usage(argv[0]);
 		exit(-1);
 	}
 
-	if( custom_atoi( argv[1], n ) ){
-		usage(argv[0]);
-		exit(-1);
+	if( !strcmp( argv[1], "-f" ) ){
+		if( argc != 3 ){
+			usage(argv[0]);
+			exit(-1);
+		}
+		else{
+			mode = FILE_MODE;
+			filename = argv[2];
+		}
 	}
-	if( custom_atoi( argv[2], edges ) ){
-		usage(argv[0]);
-		exit(-1);
+	else if( !strcmp( argv[1], "-r" ) ){
+		if( argc != 4 ){
+			usage(argv[0]);
+			exit(-1);
+		}
+		else{
+			mode = RANDOM_MODE;
+			if( custom_atoi( argv[2], n ) ){
+				usage( argv[0] );
+				exit(-1);
+			}
+			if( custom_atoi( argv[3], edges ) ){
+				usage( argv[0] );
+				exit(-1);
+			}
+			//type = argv[4];
+		}
 	}
+	
+	if( mode == RANDOM_MODE )	
+		ret = generate_random_graph( dgraph, n, edges );	
+	else if( mode == FILE_MODE )
+		ret = read_directed_graph( filename, dgraph );
 
-	ret = generate_random_graph( dgraph, n, edges );	
 	ret = find_strongly_connected_components( dgraph, arr );
 	
 	ret = dgraph.print_graph_graphviz( "problem2.dot" );

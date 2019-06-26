@@ -4,6 +4,8 @@
 #include "random_graph.h"
 #include "sud_graph.h"
 #include <queue>
+#include "input.h"
+#include <string.h>
 
 using namespace std;
 
@@ -29,10 +31,10 @@ int custom_atoi( char *arg, int& num  )
 
 void usage( char* arg )
 {
-	cout<<arg<<" <Size of graph> <Number of edges> <type> <source>\n";
+	cout<<arg<<" [ -f <filename> /-r <Size of graph> <Number of edges> <type> ] [ SOURCE ]\n";
+	cout<<" filename - Input filename with the graph\n";
 	cout<<" Size of the graph - Integer\n";
 	cout<<" Number of edges - Integer\n";
-	cout<<" Source node - Integer\n";
 }
 
 /**
@@ -41,9 +43,9 @@ void usage( char* arg )
  */
 class comparePairs{
 	public:
-	int operator()( pair<int,int>& a, pair<int,int>& b )
+	int operator()( pair<int,pair<int,int>>& a, pair<int,pair<int,int>>& b )
 	{
-		return ( a.second > b.second );
+		return ( a.second.second > b.second.second );
 	}
 };
 
@@ -59,7 +61,7 @@ class comparePairs{
  * @return 0 on success, negative on failure
  */ 
 	template <class T> 
-int dijkstra_shortest_path( T& graph, int source, vector<int>& arr )
+int dijkstra_shortest_path( T& graph, int source, vector<int>& arr, vector<int>& from )
 {
 	//vector<pair<int,int>> heap;
 	int size = graph.get_graph_size();
@@ -73,7 +75,7 @@ int dijkstra_shortest_path( T& graph, int source, vector<int>& arr )
 	// Priority queue of vertices and distances from source
 	// pair<int,int> stores ( vertex id, distance )
 	// compare_pairs compares 2 nodes
-	typedef	priority_queue<pair<int,int>,vector<pair<int,int>>,comparePairs> d_heap;
+	typedef	priority_queue<pair<int,pair<int,int>>,vector<pair<int,pair<int,int>>>,comparePairs> d_heap;
 	d_heap heap;
 	
 	if( source >= size || source < 0 )
@@ -81,27 +83,30 @@ int dijkstra_shortest_path( T& graph, int source, vector<int>& arr )
 
 	arr.reserve( size );
 	arr.resize( size );
+	from.reserve( size );
+	from.resize( size );
 	//arr[source] = 0;
 	
 	// Push source node with 0 distance
-	heap.push( pair<int,int>(source,0) );
+	heap.push( pair<int,pair<int,int>>(-1,pair<int,int>(source,0)) );
 
 	while( done < size ){
 		
 		if( heap.size() > 0 ){
 			// Extract top element from priority queue, shortest path vertex
-			pair<int,int> tp = heap.top();
+			pair<int,pair<int,int>> tp = heap.top();
 			
-			if( optimised[tp.first] == true ){
+			if( optimised[tp.second.first] == true ){
 				heap.pop();
 				continue;
 			}
 			// Get the new vertex from the graph
-			vertex tv = graph.get_vertex( tp.first );
+			vertex tv = graph.get_vertex( tp.second.first );
 
 			// Declare shortest path for this vertex
-			arr[tp.first] = tp.second;
-			optimised[tp.first] = true;
+			arr[tp.second.first] = tp.second.second;
+			optimised[tp.second.first] = true;
+			from[tp.second.first] = tp.first;
 
 			//cout<<tp.first<<endl;
 			// Iterate through all the edges and all its edges into the
@@ -110,7 +115,7 @@ int dijkstra_shortest_path( T& graph, int source, vector<int>& arr )
 			for(; begin != end; begin++ ){
 				if( optimised[begin->first] == false ){
 					//cout<<begin->first<<" "<<tp.second+begin->second<<endl;
-					heap.push( pair<int,int>(begin->first,tp.second+begin->second) );
+					heap.push( pair<int,pair<int,int>>(tp.second.first,pair<int,int>(begin->first,tp.second.second+begin->second) ));
 				}
 				//cout<<endl;
 			}
@@ -124,6 +129,7 @@ int dijkstra_shortest_path( T& graph, int source, vector<int>& arr )
 			for( int i=0; i<size; i++ ){
 				if( optimised[i] != true ){
 					arr[i] = -1;
+					from[i] = -1;
 					done++;
 					optimised[i] = true;
 				}
@@ -141,29 +147,96 @@ int main( int argc, char *argv[] )
 	sud_graph udgraph;
 	int n,edges;
 	int source;
-	string type;
-	vector<int> arr;
-
-	if( argc != 4 ){
+	//string type;
+	char *type;
+	vector<int> arr,parent;
+	char directed;	
+#define FILE_MODE 1
+#define RANDOM_MODE 2
+	char mode;
+	char *filename;
+	
+	if( argc < 3 ){
 		usage(argv[0]);
 		exit(-1);
 	}
 
-	if( custom_atoi( argv[1], n ) ){
-		usage(argv[0]);
-		exit(-1);
+	if( !strcmp( argv[1], "-f" ) ){
+		if( argc != 4 ){
+			usage(argv[0]);
+			exit(-1);
+		}
+		else{
+			mode = FILE_MODE;
+			filename = argv[2];
+		}
+		if( custom_atoi( argv[3], source ) ){
+				usage( argv[0] );
+				exit(-1);
+		}
 	}
-	if( custom_atoi( argv[2], edges ) ){
-		usage(argv[0]);
-		exit(-1);
+	else if( !strcmp( argv[1], "-r" ) ){
+		if( argc != 6 ){
+			usage(argv[0]);
+			exit(-1);
+		}
+		else{
+			mode = RANDOM_MODE;
+			if( custom_atoi( argv[2], n ) ){
+				usage( argv[0] );
+				exit(-1);
+			}
+			if( custom_atoi( argv[3], edges ) ){
+				usage( argv[0] );
+				exit(-1);
+			}
+			type = argv[4];	
+			if( custom_atoi( argv[5], source ) ){
+				usage( argv[0] );
+				exit(-1);
+			}
+
+			//type = argv[4];
+		}
 	}
-	if( custom_atoi( argv[3], source ) ){
-		usage(argv[0]);
-		exit(-1);
+	
+	if( mode == RANDOM_MODE ){
+		if( strcmp( type, "u" ) == 0 ){
+			directed = 0;
+			ret = generate_random_connected_graph( udgraph, n, edges );
+		}
+		else if(strcmp( type, "d" ) == 0 ){
+			directed = 1;
+			ret = generate_random_connected_graph( dgraph, n, edges );	
+		}
+		else{
+			usage( argv[0] );
+			exit(-1);
+		}
 	}
+	else if( mode == FILE_MODE ){
+#define SUCCESS 0
+#define WRONG_FORMAT -2
+		ret = read_undirected_graph( filename, udgraph );
+		if( ret == SUCCESS ){
+			directed = 0;
+			n = udgraph.get_graph_size();
+		}
+		else if( ret == WRONG_FORMAT ){
+			directed = 1;
+			ret = read_directed_graph( filename, dgraph );
+			n = dgraph.get_graph_size();
+		}
+		else{
+			usage( argv[0] );
+			exit(-1);
+		}
+
+	}
+
 	//ret = generate_random_DAG( dgraph, n, edges );
-	ret = generate_random_connected_graph( dgraph, n, edges );
-       	ret = generate_random_connected_graph( udgraph, n, edges );	
+	//ret = generate_random_connected_graph( dgraph, n, edges );
+       	//ret = generate_random_connected_graph( udgraph, n, edges );	
 	if( source >= n || source < 0 ){
 		usage(argv[0]);
 		exit(-1);
@@ -171,25 +244,26 @@ int main( int argc, char *argv[] )
 	//ret = topological_sort( dgraph, arr );
 	//ret = dgraph.print_graph_graphviz( "problem3.dot" );
 	//system( " dot -Tsvg -O problem3.dot " );
-	ret = dijkstra_shortest_path( dgraph, source, arr );
-	ret = dgraph.print_graph_graphviz( "problem5ad.dot" );
-	system( " dot -Tsvg -O problem5ad.dot " );
-	
-	int size = arr.size();
-	for( int i=0; i< size; i++ )
-		cout<<source<<"->"<<i<<" "<<arr[i]<<endl;
-	cout<<"\n";
+	if( directed ){
+		ret = dijkstra_shortest_path( dgraph, source, arr, parent );
+		ret = dgraph.print_graph_graphviz( "problem5ad.dot" );
+		system( " dot -Tsvg -O problem5ad.dot " );
 
-	arr.clear();
-	ret = dijkstra_shortest_path( udgraph, source, arr );
-	ret = udgraph.print_graph_graphviz( "problem5aud.dot" );
-	system( " dot -Tsvg -O problem5aud.dot " );
-	
-	size = arr.size();
-	for( int i=0; i< size; i++ )
-		cout<<source<<"->"<<i<<" "<<arr[i]<<endl;
-	cout<<"\n";
+		int size = arr.size();
+		for( int i=0; i< size; i++ )
+			cout<<source<<"->"<<parent[i]<<"->"<<i<<" "<<arr[i]<<endl;
+		cout<<"\n";
+	}
+	else{
+		ret = dijkstra_shortest_path( udgraph, source, arr, parent );
+		ret = udgraph.print_graph_graphviz( "problem5aud.dot" );
+		system( " dot -Tsvg -O problem5aud.dot " );
 
+		int size = arr.size();
+		for( int i=0; i< size; i++ )
+			cout<<source<<"->"<<parent[i]<<"->"<<i<<" "<<arr[i]<<endl;
+		cout<<"\n";
+	}
 	return 0;
 }
 

@@ -30,13 +30,14 @@ void usage( char* arg )
 }
 
 template<class T>
-int _dfs( T& graph, vector<bool>& list, int cur, FILE *fp, int level )
+int _dfs( T& graph, vector<bool>& list, vector<bool>& parent, int cur, FILE *fp, int level )
 {
 	vertex ver = graph.get_vertex( cur );
 	//vertex ver;
 	auto start = ver.cbegin(), end = ver.cend();
 
 	list[cur] = true;
+	parent[cur] = true;
 	fprintf(fp,"%d [ label = %s ]\n",cur,ver.get_name().c_str());
 	//for( int i=0; i<level; i++ ) cout<<"\t";
 	cout<<cur<<"\n";
@@ -49,13 +50,17 @@ int _dfs( T& graph, vector<bool>& list, int cur, FILE *fp, int level )
 			cout<<" "<<start->second<<" ";
 			//cout<<cur<<" --"<<start->second<<"--> "<<start->first<<"\n";
 			fprintf(fp,"%d->%d [ label = %d,color=\"green\" ]\n",cur,start->first,start->second);
-			_dfs( graph, list, start->first, fp, level+1 );
+			_dfs( graph, list, parent, start->first, fp, level+1 );
 		}
-		else{
+		else if( parent[start->first] == false ){
 			fprintf(fp,"%d->%d [ label = %d,color=\"red\" ]\n",cur,start->first,start->second);
+		}
+		else {
+			fprintf(fp,"%d->%d [ label = %d,color=\"orange\" ]\n",cur,start->first,start->second);
 		}
 			
 	}
+	parent[cur] = false;
 	return 0;
 }
 
@@ -63,20 +68,24 @@ template<class T>
 int dfs( T& graph, string filename )
 {
 	int size = graph.get_graph_size();
-	vector<bool> list;
+	vector<bool> list,parent;
 	int ret;
 	FILE *fp= fopen( filename.c_str(), "w" );
 	
 	list.reserve( size );
 	list.resize( size );
+	parent.reserve( size );
+	parent.resize( size );
 
-	for( int i=0; i<size; i++ )
+	for( int i=0; i<size; i++ ){
 		list[i] = false;
+		parent[i] = false;
+	}
 	
 	fprintf(fp,"digraph{\n");
         for( int i=0; i<size; i++ ){
 		if( list[i] == false )
-			ret = _dfs( graph, list, i, fp, 0 );
+			ret = _dfs( graph, list, parent, i, fp, 0 );
 	}
 	fprintf(fp,"\n}");
 	fclose(fp);
@@ -100,16 +109,7 @@ int main( int argc, char *argv[])
 		usage(argv[0]);
 		exit(-1);
 	}
-//
-//	if( custom_atoi( argv[1], n ) ){
-//		usage(argv[0]);
-//		exit(-1);
-//	}
-//	if( custom_atoi( argv[2], edges ) ){
-//		usage(argv[0]);
-//		exit(-1);
-//	}
-	
+
 	if( !strcmp( argv[1], "-f" ) ){
 		if( argc != 3 ){
 			usage(argv[0]);

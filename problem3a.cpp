@@ -2,6 +2,8 @@
 #include <vector>
 #include "random_graph.h"
 #include "sud_graph.h"
+#include "string.h"
+#include "input.h"
 
 using namespace std;
 
@@ -27,7 +29,8 @@ int custom_atoi( char *arg, int& num  )
 
 void usage( char* arg )
 {
-	cout<<arg<<" <Size of graph> <Number of edges> <type> <source>\n";
+	cout<<arg<<" -f <filename> /-r<Size of graph> <Number of edges>\n";
+	cout<<" filename - Input filename with the graph\n";
 	cout<<" Size of the graph - Integer\n";
 	cout<<" Number of edges - Integer\n";
 }
@@ -80,7 +83,7 @@ int art_dfs( sud_graph& graph, int start, vector<bool>& visited, vector<int>& id
 				low[start] = ids[begin->first];
 		}
 	}
-	cout<<start<<" "<<ids[start]<<" "<<low[start]<<endl;
+	//cout<<start<<" "<<ids[start]<<" "<<low[start]<<endl;
 
 	return 0;
 }
@@ -155,22 +158,53 @@ int main( int argc, char *argv[] )
 	//string type;
 	vector<int> arr;
 	int connected;
-		
-	if( argc != 3 ){
+			
+#define FILE_MODE 1
+#define RANDOM_MODE 2
+	char mode;
+	char *filename;
+	
+	if( argc < 2 ){
 		usage(argv[0]);
 		exit(-1);
 	}
 
-	if( custom_atoi( argv[1], n ) ){
-		usage(argv[0]);
-		exit(-1);
+	if( !strcmp( argv[1], "-f" ) ){
+		if( argc != 3 ){
+			usage(argv[0]);
+			exit(-1);
+		}
+		else{
+			mode = FILE_MODE;
+			filename = argv[2];
+		}
 	}
-	if( custom_atoi( argv[2], edges ) ){
-		usage(argv[0]);
-		exit(-1);
+	else if( !strcmp( argv[1], "-r" ) ){
+		if( argc != 4 ){
+			usage(argv[0]);
+			exit(-1);
+		}
+		else{
+			mode = RANDOM_MODE;
+			if( custom_atoi( argv[2], n ) ){
+				usage( argv[0] );
+				exit(-1);
+			}
+			if( custom_atoi( argv[3], edges ) ){
+				usage( argv[0] );
+				exit(-1);
+			}
+			//type = argv[4];
+		}
 	}
+	
+	if( mode == RANDOM_MODE )	
+		ret = generate_random_graph( udgraph, n, edges );	
+	else if( mode == FILE_MODE )
+		ret = read_undirected_graph( filename, udgraph );
 
-	ret = generate_random_graph( udgraph, n, edges );	
+
+	//ret = generate_random_graph( udgraph, n, edges );	
 	//ret = find_strongly_connected_components( dgraph, arr );
 	connected = find_articulation_points( udgraph, arr );
 	ret = udgraph.print_graph_graphviz( "problem3a.dot" );

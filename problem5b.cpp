@@ -3,6 +3,8 @@
 #include "random_graph.h"
 #include "sud_graph.h"
 #include <algorithm>
+#include "input.h"
+#include <string.h>
 
 using namespace std;
 
@@ -28,7 +30,8 @@ int custom_atoi( char *arg, int& num  )
 
 void usage( char* arg )
 {
-	cout<<arg<<" <Size of graph> <Number of edges> <type> <source>\n";
+	cout<<arg<<" -f <filename> /-r<Size of graph> <Number of edges>\n";
+	cout<<" filename - Input filename with the graph\n";
 	cout<<" Size of the graph - Integer\n";
 	cout<<" Number of edges - Integer\n";
 }
@@ -139,6 +142,15 @@ bool edge_comp( edge& first, edge& second )
 	return ( first.second > second.second );
 }
 
+/**
+ * @func kruskal_mst
+ * @brief Kruskal mst algorithm which finds the edges that are present in the MST
+ *
+ * @param graph
+ * @param arr Array of edges which are present in the MST
+ *
+ * @return 0 on success
+ */
 int kruskal_mst( sud_graph& graph, vector<edge>& arr )
 {
 	int size = graph.get_graph_size();
@@ -198,22 +210,58 @@ int main( int argc, char *argv[] )
 	if( !fp ){
 		exit(-1);
 	}
-		
-	if( argc != 3 ){
+					
+#define FILE_MODE 1
+#define RANDOM_MODE 2
+	char mode;
+	char *filename;
+	
+	if( argc < 2 ){
 		usage(argv[0]);
 		exit(-1);
 	}
 
-	if( custom_atoi( argv[1], n ) ){
-		usage(argv[0]);
-		exit(-1);
+	if( !strcmp( argv[1], "-f" ) ){
+		if( argc != 3 ){
+			usage(argv[0]);
+			exit(-1);
+		}
+		else{
+			mode = FILE_MODE;
+			filename = argv[2];
+		}
 	}
-	if( custom_atoi( argv[2], edges ) ){
-		usage(argv[0]);
-		exit(-1);
+	else if( !strcmp( argv[1], "-r" ) ){
+		if( argc != 4 ){
+			usage(argv[0]);
+			exit(-1);
+		}
+		else{
+			mode = RANDOM_MODE;
+			if( custom_atoi( argv[2], n ) ){
+				usage( argv[0] );
+				exit(-1);
+			}
+			if( custom_atoi( argv[3], edges ) ){
+				usage( argv[0] );
+				exit(-1);
+			}
+			//type = argv[4];
+		}
+	}
+	
+	if( mode == RANDOM_MODE )	
+		ret = generate_random_connected_graph( udgraph, n, edges );	
+	else if( mode == FILE_MODE ){
+		ret = read_undirected_graph( filename, udgraph );
+		if( ret != 0 ){
+			fprintf(stderr,"Ensure the graph is undirected\n");
+			usage(argv[0]);
+			exit(-1);
+		}
 	}
 
-	ret = generate_random_connected_graph( udgraph, n, edges );	
+	//ret = generate_random_connected_graph( udgraph, n, edges );	
 	//ret = dijkstra_shortest_path( udgraph, source, arr );
 	ret = kruskal_mst( udgraph, arr );
 	ret = udgraph.print_graph_graphviz( "problem5b.dot" );
